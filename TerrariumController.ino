@@ -1,3 +1,4 @@
+#include "src/Button.h"
 #include "DHT.h"
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
@@ -7,6 +8,20 @@
 DHT dht(DHTPIN, DHTTYPE);
 LiquidCrystal_I2C display(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
 
+Button btnLeft(3);
+Button btnRight(4);
+
+float temp;
+float humidity;
+
+void drawSensorGUI();
+
+int currentGUI = 0;
+void(*GUIScreens[]) =
+{
+  drawSensorGUI
+};
+
 void setup()
 {
   display.begin(20, 4);
@@ -15,14 +30,14 @@ void setup()
 
 void loop()
 {
-  float temp = dht.readTemperature();
-  float humidity = dht.readHumidity();
+  temp = dht.readTemperature();
+  humidity = dht.readHumidity();
 
-  drawSensorGUI(temp, humidity);
+  GUIScreens[currentGUI]();
   delay(1000);
 }
 
-void drawSensorGUI(float temp, float humidity)
+void drawSensorGUI()
 {
   display.setCursor(0,0);
   display.print("Temperature: ");
@@ -34,4 +49,3 @@ void drawSensorGUI(float temp, float humidity)
   display.print((int)humidity);
   display.print("  ");
 }
-
