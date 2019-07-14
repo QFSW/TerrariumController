@@ -13,8 +13,8 @@ Button btnLeft(30);
 Button btnRight(31);
 Button btnUp(32);
 Button btnDown(33);
-Button btnSubmit(34);
-Button btnCancel(35);
+Button btnCancel(34);
+Button btnSubmit(35);
 
 Button* btns[BUTTON_COUNT]
 {
@@ -26,31 +26,46 @@ Button* btns[BUTTON_COUNT]
   &btnCancel
 };
 
+int vcursor = 0;
+
 float temp;
 float humidity;
+float ledStrength = 0;
+
+int time = 0;
+int lastTime = 0;
+int deltaTime = 0;
+
+#define LED_PIN 3
 
 void openGUIScreen(int index);
 void drawGUIFooter();
 void drawSensorGUI();
+void drawOutputGUI();
 
-#define GUI_SCREEN_COUNT 3
+
+#define GUI_SCREEN_COUNT 2
 int currentGUI = 0;
 void(*GUIScreens[GUI_SCREEN_COUNT])() =
 {
   drawSensorGUI,
-  drawSensorGUI,
-  drawSensorGUI
+  drawOutputGUI
 };
 
 void setup()
 {
   display.begin();
   dht.begin();
+  pinMode(LED_PIN, OUTPUT);
 
   for (int i = 0; i < BUTTON_COUNT; ++i)
   {
     btns[i]->begin();
   }
+
+  time = millis();
+  lastTime = millis();
+  deltaTime = 0;
 
   openGUIScreen(0);
 }
@@ -65,9 +80,14 @@ void loop()
     btns[i]->update();
   }
 
+  lastTime = time;
+  time = millis();
+  deltaTime = time - lastTime;
+
   if (btnLeft.isDownNow()) { openGUIScreen(currentGUI - 1); }
   else if (btnRight.isDownNow()) { openGUIScreen(currentGUI + 1); }
 
+  analogWrite(LED_PIN, (int)2.55 * ledStrength);
   GUIScreens[currentGUI]();
 }
 
@@ -76,6 +96,7 @@ void openGUIScreen(int index)
   if (index >= GUI_SCREEN_COUNT) { index = GUI_SCREEN_COUNT - 1; }
   if (index < 0) { index = 0; }
   currentGUI = index;
+  display.clear();
   drawGUIFooter();
 }
 
@@ -98,4 +119,20 @@ void drawSensorGUI()
   display.print("Humidity: ");
   display.print((int)humidity);
   display.print("%   ");
+}
+
+void drawOutputGUI()
+{
+  display.setCursor(0, 0);
+  display.print("LED: ");
+  display.print((int)ledStrength);
+  display.print("%   ");
+
+  const float changeSpeed = 100.0 / 1000 / 2;
+  float strengtDelta = changeSpeed * deltaTime;
+  if (btnSubmit.isDown()) { ledStrength += strengtDelta; }
+  if (btnCancel.isDown()) { ledStrength -= strengtDelta; }
+
+  if (ledStrength > 100) { ledStrength = 100; }
+  if (ledStrength < 0) { ledStrength = 0; }
 }
