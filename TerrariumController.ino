@@ -1,11 +1,13 @@
 #include "src/Button.h"
+#include "src/SensorsModule.h"
+#include "src/OutputsModule.h"
 #include "DHT.h"
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
-#define DHTPIN 2
-#define DHTTYPE DHT11
 
-DHT dht(DHTPIN, DHTTYPE);
+#define DHT_PIN 2
+#define LED_PIN 3
+
 LiquidCrystal_I2C display(0x27, 20, 4);
 
 #define BUTTON_COUNT 6
@@ -28,35 +30,31 @@ Button* btns[BUTTON_COUNT]
 
 int vcursor = 0;
 
-float temp;
-float humidity;
-float ledStrength = 0;
-
 int time = 0;
 int lastTime = 0;
 int deltaTime = 0;
 
-#define LED_PIN 3
-
 void openGUIScreen(int index);
 void drawGUIFooter();
-void drawSensorGUI();
-void drawOutputGUI();
 
-
-#define GUI_SCREEN_COUNT 2
-int currentGUI = 0;
-void(*GUIScreens[GUI_SCREEN_COUNT])() =
+#define MODULE_COUNT 2
+SensorsModule sensorsModule(DHT_PIN);
+OutputsModule outputsModule(LED_PIN);
+int currentlyDisplayedModule = 0;
+Module* modules[MODULE_COUNT]
 {
-  drawSensorGUI,
-  drawOutputGUI
+  &sensorsModule,
+  &outputsModule
 };
 
 void setup()
 {
   display.begin();
-  dht.begin();
-  pinMode(LED_PIN, OUTPUT);
+
+  for (int i = 0; i < MODULE_COUNT; ++i)
+  {
+    modules[i]->begin();
+  }
 
   for (int i = 0; i < BUTTON_COUNT; ++i)
   {
@@ -72,30 +70,31 @@ void setup()
 
 void loop()
 {
-  temp = dht.readTemperature();
-  humidity = dht.readHumidity();
-
   for (int i = 0; i < BUTTON_COUNT; ++i)
   {
     btns[i]->update();
+  }
+
+  for (int i = 0; i < MODULE_COUNT; ++i)
+  {
+    modules[i]->update();
   }
 
   lastTime = time;
   time = millis();
   deltaTime = time - lastTime;
 
-  if (btnLeft.isDownNow()) { openGUIScreen(currentGUI - 1); }
-  else if (btnRight.isDownNow()) { openGUIScreen(currentGUI + 1); }
+  if (btnLeft.isDownNow()) { openGUIScreen(currentlyDisplayedModule - 1); }
+  else if (btnRight.isDownNow()) { openGUIScreen(currentlyDisplayedModule + 1); }
 
-  analogWrite(LED_PIN, (int)2.55 * ledStrength);
-  GUIScreens[currentGUI]();
+  modules[currentlyDisplayedModule]->drawGUI(display);
 }
 
 void openGUIScreen(int index)
 {
-  if (index >= GUI_SCREEN_COUNT) { index = GUI_SCREEN_COUNT - 1; }
+  if (index >= MODULE_COUNT) { index = MODULE_COUNT - 1; }
   if (index < 0) { index = 0; }
-  currentGUI = index;
+  currentlyDisplayedModule = index;
   display.clear();
   drawGUIFooter();
 }
@@ -103,36 +102,9 @@ void openGUIScreen(int index)
 void drawGUIFooter()
 {
   display.setCursor(0, 3);
-  display.print(currentGUI + 1);
+  display.print(currentlyDisplayedModule + 1);
   display.print('/');
-  display.print(GUI_SCREEN_COUNT);
-}
-
-void drawSensorGUI()
-{
-  display.setCursor(0, 0);
-  display.print("Temperature: ");
-  display.print((int)temp);
-  display.print("C   ");
-  
-  display.setCursor(0, 1);
-  display.print("Humidity: ");
-  display.print((int)humidity);
-  display.print("%   ");
-}
-
-void drawOutputGUI()
-{
-  display.setCursor(0, 0);
-  display.print("LED: ");
-  display.print((int)ledStrength);
-  display.print("%   ");
-
-  const float changeSpeed = 100.0 / 1000 / 2;
-  float strengtDelta = changeSpeed * deltaTime;
-  if (btnSubmit.isDown()) { ledStrength += strengtDelta; }
-  if (btnCancel.isDown()) { ledStrength -= strengtDelta; }
-
-  if (ledStrength > 100) { ledStrength = 100; }
-  if (ledStrength < 0) { ledStrength = 0; }
+  display.print(MODULE_COUNT);
+  display.print(' ');
+  display.print(modules[currentlyDisplayedModule]->getName());
 }
