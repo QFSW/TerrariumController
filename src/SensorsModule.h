@@ -12,7 +12,7 @@ public:
     virtual int getControlRows() const;
 
     virtual void drawGUI(LiquidCrystal_I2C& display);
-    virtual void update();
+    virtual void update(ControlPackage& pkg);
     virtual void begin();
 
 private:

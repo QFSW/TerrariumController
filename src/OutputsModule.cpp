@@ -33,17 +33,21 @@ void OutputsModule::drawRow(LiquidCrystal_I2C& display, float& strength, const c
     display.print((int)strength);
     display.print("%");
 
-    const float changeSpeed = 100.0 / 1000 / 2;
-    //float strengtDelta = changeSpeed * deltaTime;
-    //if (btnSubmit.isDown()) { strength += strengtDelta; }
-    //if (btnCancel.isDown()) { strength -= strengtDelta; }
+    if (_pkg.vcursor == rowIndex)
+    {
+        const float changeSpeed = 100.0 / 1000 / 2;
+        float strengtDelta = changeSpeed * _pkg.deltaTime;
+        if (_pkg.btnSubmit->isDown()) { strength += strengtDelta; }
+        if (_pkg.btnCancel->isDown()) { strength -= strengtDelta; }
 
-    if (strength > 100) { strength = 100; }
-    if (strength < 0) { strength = 0; }
+        if (strength > 100) { strength = 100; }
+        if (strength < 0) { strength = 0; }
+    }
 }
 
-void OutputsModule::update()
+void OutputsModule::update(ControlPackage& pkg)
 {
+    _pkg = pkg;
     analogWrite(_ledPin, (int)2.55 * _ledStrength);
     analogWrite(_fanPin, (int)2.55 * _fanStrength);
 }

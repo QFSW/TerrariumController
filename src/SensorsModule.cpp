@@ -28,7 +28,7 @@ void SensorsModule::drawGUI(LiquidCrystal_I2C& display)
   display.print("%  ");
 }
 
-void SensorsModule::update()
+void SensorsModule::update(ControlPackage& pkg)
 {
     _temp = _dht.readTemperature();
     _humidity = _dht.readHumidity();

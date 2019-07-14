@@ -1,9 +1,12 @@
 #include "src/Button.h"
+#include "src/ControlPackage.h"
 #include "src/SensorsModule.h"
 #include "src/OutputsModule.h"
 #include "DHT.h"
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
+
+ControlPackage pkg;
 
 #define DHT_PIN 2
 #define LED_PIN 3
@@ -29,11 +32,8 @@ Button* btns[BUTTON_COUNT]
   &btnCancel
 };
 
-int vcursor = 0;
-
 int time = 0;
 int lastTime = 0;
-int deltaTime = 0;
 
 void openGUIScreen(int index);
 void drawGUIFooter();
@@ -51,6 +51,9 @@ Module* modules[MODULE_COUNT]
 
 void setup()
 {
+  pkg.btnSubmit = &btnSubmit;
+  pkg.btnCancel = &btnCancel;
+
   display.begin();
 
   for (int i = 0; i < MODULE_COUNT; ++i)
@@ -65,13 +68,17 @@ void setup()
 
   time = millis();
   lastTime = millis();
-  deltaTime = 0;
+  pkg.deltaTime = 0;
 
   openGUIScreen(0);
 }
 
 void loop()
 {
+  lastTime = time;
+  time = millis();
+  pkg.deltaTime = time - lastTime;
+
   for (int i = 0; i < BUTTON_COUNT; ++i)
   {
     btns[i]->update();
@@ -79,22 +86,18 @@ void loop()
 
   for (int i = 0; i < MODULE_COUNT; ++i)
   {
-    modules[i]->update();
+    modules[i]->update(pkg);
   }
-
-  lastTime = time;
-  time = millis();
-  deltaTime = time - lastTime;
 
   if (btnLeft.isDownNow()) { openGUIScreen(currentlyDisplayedModule - 1); }
   else if (btnRight.isDownNow()) { openGUIScreen(currentlyDisplayedModule + 1); }
 
-  if (btnUp.isDownNow()) { vcursor--; }
-  if (btnDown.isDownNow()) { vcursor++; }
-  if (vcursor < 0) { vcursor = 0; }
-  if (vcursor >= modules[currentlyDisplayedModule]->getControlRows())
+  if (btnUp.isDownNow()) { pkg.vcursor--; }
+  if (btnDown.isDownNow()) { pkg.vcursor++; }
+  if (pkg.vcursor < 0) { pkg.vcursor = 0; }
+  if (pkg.vcursor >= modules[currentlyDisplayedModule]->getControlRows())
   {
-    vcursor = modules[currentlyDisplayedModule]->getControlRows() - 1;
+    pkg.vcursor = modules[currentlyDisplayedModule]->getControlRows() - 1;
   }
 
   modules[currentlyDisplayedModule]->drawGUI(display);
@@ -125,7 +128,7 @@ void drawGUIvCursor()
   for (int i = 0; i < 4; ++i)
   {
     display.setCursor(19, i);
-    if (vcursor == i) { display.print("*"); }
+    if (pkg.vcursor == i) { display.print("*"); }
     else { display.print(" "); }
   }
 }
