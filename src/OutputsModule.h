@@ -5,7 +5,7 @@
 class OutputsModule : public Module
 {
 public:
-    OutputsModule(int ledPin);
+    OutputsModule(int ledPin, int fanPin);
 
     virtual const char* getName() const;
     virtual int getControlRows() const;
@@ -17,6 +17,11 @@ public:
 private:
     int _ledPin;
     float _ledStrength;
+
+    int _fanPin;
+    float _fanStrength;
+
+    void drawRow(LiquidCrystal_I2C& display, float& strength, const char* name, int rowIndex);
 };
 
 #endif

@@ -7,6 +7,7 @@
 
 #define DHT_PIN 2
 #define LED_PIN 3
+#define FAN_PIN 4
 
 LiquidCrystal_I2C display(0x27, 20, 4);
 
@@ -36,10 +37,11 @@ int deltaTime = 0;
 
 void openGUIScreen(int index);
 void drawGUIFooter();
+void drawGUIvCursor();
 
 #define MODULE_COUNT 2
 SensorsModule sensorsModule(DHT_PIN);
-OutputsModule outputsModule(LED_PIN);
+OutputsModule outputsModule(LED_PIN, FAN_PIN);
 int currentlyDisplayedModule = 0;
 Module* modules[MODULE_COUNT]
 {
@@ -87,7 +89,16 @@ void loop()
   if (btnLeft.isDownNow()) { openGUIScreen(currentlyDisplayedModule - 1); }
   else if (btnRight.isDownNow()) { openGUIScreen(currentlyDisplayedModule + 1); }
 
+  if (btnUp.isDownNow()) { vcursor--; }
+  if (btnDown.isDownNow()) { vcursor++; }
+  if (vcursor < 0) { vcursor = 0; }
+  if (vcursor >= modules[currentlyDisplayedModule]->getControlRows())
+  {
+    vcursor = modules[currentlyDisplayedModule]->getControlRows() - 1;
+  }
+
   modules[currentlyDisplayedModule]->drawGUI(display);
+  drawGUIvCursor();
 }
 
 void openGUIScreen(int index)
@@ -107,4 +118,14 @@ void drawGUIFooter()
   display.print(MODULE_COUNT);
   display.print(' ');
   display.print(modules[currentlyDisplayedModule]->getName());
+}
+
+void drawGUIvCursor()
+{
+  for (int i = 0; i < 4; ++i)
+  {
+    display.setCursor(19, i);
+    if (vcursor == i) { display.print("*"); }
+    else { display.print(" "); }
+  }
 }

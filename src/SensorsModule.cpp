@@ -20,12 +20,12 @@ void SensorsModule::drawGUI(LiquidCrystal_I2C& display)
   display.setCursor(0, 0);
   display.print("Temperature: ");
   display.print((int)_temp);
-  display.print("C   ");
+  display.print("C ");
   
   display.setCursor(0, 1);
   display.print("Humidity: ");
   display.print((int)_humidity);
-  display.print("%   ");
+  display.print("%  ");
 }
 
 void SensorsModule::update()
