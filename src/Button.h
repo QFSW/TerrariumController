@@ -6,7 +6,13 @@ class Button
 {
 public:
   Button(int pin);
-  
+
+  void begin();
+  void update();
+
+  bool isDown() const;
+  bool isDownNow() const;
+
 private:
   bool _down = false;
   bool _wasDown = false;
