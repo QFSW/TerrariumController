@@ -2,6 +2,7 @@
 #include "src/ControlPackage.h"
 #include "src/SensorsModule.h"
 #include "src/OutputsModule.h"
+#include "src/LoggingModule.h"
 #include "DHT.h"
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
@@ -39,14 +40,16 @@ void openGUIScreen(int index);
 void drawGUIFooter();
 void drawGUIvCursor();
 
-#define MODULE_COUNT 2
+#define MODULE_COUNT 3
 SensorsModule sensorsModule(DHT_PIN);
 OutputsModule outputsModule(LED_PIN, FAN_PIN);
+LoggingModule loggingModule(sensorsModule, outputsModule);
 int currentlyDisplayedModule = 0;
 Module* modules[MODULE_COUNT]
 {
   &sensorsModule,
-  &outputsModule
+  &outputsModule,
+  &loggingModule
 };
 
 void setup()
@@ -119,7 +122,7 @@ void drawGUIFooter()
   display.print(currentlyDisplayedModule + 1);
   display.print('/');
   display.print(MODULE_COUNT);
-  display.print(' ');
+  display.print(" - ");
   display.print(modules[currentlyDisplayedModule]->getName());
 }
 
