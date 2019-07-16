@@ -9,19 +9,19 @@
 
 ControlPackage pkg;
 
-#define DHT_PIN 2
-#define LED_PIN 3
-#define FAN_PIN 4
+#define DHT_PIN 12
+#define LED_PIN 11
+#define FAN_PIN 10
 
 LiquidCrystal_I2C display(0x27, 20, 4);
 
 #define BUTTON_COUNT 6
-Button btnLeft(30);
-Button btnRight(31);
-Button btnUp(32);
-Button btnDown(33);
-Button btnCancel(34);
-Button btnSubmit(35);
+Button btnLeft(7);
+Button btnRight(6);
+Button btnUp(5);
+Button btnDown(4);
+Button btnCancel(3);
+Button btnSubmit(2);
 
 Button* btns[BUTTON_COUNT]
 {

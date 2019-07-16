@@ -21,6 +21,39 @@ void OutputsModule::drawGUI(LiquidCrystal_I2C& display)
     drawRow(display, _fanStrength, "Fans", 1);
 }
 
+void OutputsModule::initFanPWM()
+{
+    TCCR1A = 0;           // undo the configuration done by...
+    TCCR1B = 0;           // ...the Arduino core library
+    TCNT1  = 0;           // reset timer
+    TCCR1A = _BV(COM1A1)  // non-inverted PWM on ch. A
+           | _BV(COM1B1)  // same on ch; B
+           | _BV(WGM11);  // mode 10: ph. correct PWM, TOP = ICR1
+    TCCR1B = _BV(WGM13)   // ditto
+           | _BV(CS10);   // prescaler = 1
+    ICR1   = 320;         // TOP = 320
+
+    // Set the PWM pins as output.
+    pinMode(9, OUTPUT);
+    pinMode(10, OUTPUT);
+}
+
+void OutputsModule::writeFanPWM(int pin, int value)
+{
+    switch (pin)
+    {
+        case 9:
+            OCR1A = value;
+            break;
+        case 10:
+            OCR1B = value;
+            break;
+        default:
+            // no other pin will work
+            break;
+    }
+}
+
 void OutputsModule::drawRow(LiquidCrystal_I2C& display, float& strength, const char* name, int rowIndex)
 {
     display.setCursor(0, rowIndex);
@@ -49,11 +82,11 @@ void OutputsModule::update(ControlPackage& pkg)
 {
     _pkg = pkg;
     analogWrite(_ledPin, (int)2.55 * _ledStrength);
-    analogWrite(_fanPin, (int)2.55 * _fanStrength);
+    writeFanPWM(_fanPin, (int)3.20 * _fanStrength);
 }
 
 void OutputsModule::begin()
 {
     pinMode(_ledPin, OUTPUT);
-    pinMode(_fanPin, OUTPUT);
+    initFanPWM();
 }

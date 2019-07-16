@@ -23,6 +23,8 @@ private:
     int _fanPin;
     float _fanStrength;
 
+    void initFanPWM();
+    void writeFanPWM(int pin, int value);
     void drawRow(LiquidCrystal_I2C& display, float& strength, const char* name, int rowIndex);
 };
 
