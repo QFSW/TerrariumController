@@ -1,6 +1,6 @@
 #include "OutputsModule.h"
 
-OutputsModule::OutputsModule(int ledPin, int fanPin) : _ledPin(ledPin), _fanPin(fanPin)
+OutputsModule::OutputsModule(int ledPin, int fanPin, int fanEN) : _ledPin(ledPin), _fanPin(fanPin), _fanEN(fanEN)
 {
 
 }
@@ -83,10 +83,12 @@ void OutputsModule::update(ControlPackage& pkg)
     _pkg = pkg;
     analogWrite(_ledPin, (int)2.55 * _ledStrength);
     writeFanPWM(_fanPin, (int)3.20 * _fanStrength);
+    digitalWrite(_fanEN, _fanStrength > 0 ? HIGH : LOW);
 }
 
 void OutputsModule::begin()
 {
     pinMode(_ledPin, OUTPUT);
+    pinMode(_fanEN, OUTPUT);
     initFanPWM();
 }

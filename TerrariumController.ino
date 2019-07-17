@@ -12,6 +12,7 @@ ControlPackage pkg;
 #define DHT_PIN 12
 #define LED_PIN 11
 #define FAN_PIN 10
+#define FAN_EN  8
 
 LiquidCrystal_I2C display(0x27, 20, 4);
 
@@ -42,7 +43,7 @@ void drawGUIvCursor();
 
 #define MODULE_COUNT 3
 SensorsModule sensorsModule(DHT_PIN);
-OutputsModule outputsModule(LED_PIN, FAN_PIN);
+OutputsModule outputsModule(LED_PIN, FAN_PIN, FAN_EN);
 LoggingModule loggingModule(sensorsModule, outputsModule);
 int currentlyDisplayedModule = 0;
 Module* modules[MODULE_COUNT]

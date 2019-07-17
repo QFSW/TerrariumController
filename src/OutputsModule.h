@@ -5,7 +5,7 @@
 class OutputsModule : public Module
 {
 public:
-    OutputsModule(int ledPin, int fanPin);
+    OutputsModule(int ledPin, int fanPin, int fanEN);
 
     virtual const char* getName() const;
     virtual int getControlRows() const;
@@ -21,6 +21,7 @@ private:
     float _ledStrength;
 
     int _fanPin;
+    int _fanEN;
     float _fanStrength;
 
     void initFanPWM();
